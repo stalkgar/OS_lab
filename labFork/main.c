@@ -6,15 +6,14 @@
 #include <sys/wait.h>
 #include <signal.h>
 
-
 pid_t Pid;	//child process pid
 
-void ChildExit(void)
+void child_Exit(void)
 {
 	printf("CHILD: Exit\n");
 }
 
-void SigTermHandler(int sig)
+void sig_Term_Handler(int sig)
 {
     if(Pid == 0)
     {
@@ -22,28 +21,26 @@ void SigTermHandler(int sig)
     }
 }
 
-void SigIntHandler(int sig)
+void sig_Int_Handler(int sig)
 {
     if(Pid == 0)
     {
         printf("\nSigint %d received from child process\n", sig);
-        kill(getpid(), SIGTERM);	//going to run SigTermHandler
+        kill(getpid(), SIGTERM);
     }
 }
 
 int main(int argc, char** argv)
 {
-		int exitCode;
-		int exitError;
+		int code_exit;
+		int error_exit;
 		
 		struct sigaction newAction;
-		newAction.sa_handler = SigTermHandler;
+		newAction.saHandler = sig_Term_Handler;
 		sigemptyset(&newAction.sa_mask);
-		newAction.sa_flags = 0;
+		newAction.saFlags = 0;
 		sigaction(SIGTERM, &newAction, NULL);
-		
-		signal(SIGINT, SigIntHandler);//setting sigint handler by signal
-		
+		signal(SIGINT, sig_Int_Handler);
 		switch(Pid = fork())
 		{
 				case -1:
@@ -52,29 +49,25 @@ int main(int argc, char** argv)
 				case 0:
 					printf("CHILD: My PID is %d\n", getpid());
 					printf("CHILD: My parent's PID is %d\n", getppid());
-					printf(">>> You can stop child process"
-					        " immediatly by using Ctrl+C (or wait 15 sec)\n");
-					sleep(15);
+					printf(">>> You can stop child process immediatly by using Ctrl+C (or wait 10 sec)\n");
+					sleep(10);
 					
 					printf("CHILD: Enter child's exit code: ");
-					scanf("%d", &exitCode);
-					exitError = atexit(ChildExit);
+					scanf("%d", &code_exit);
+					error_exit = atexit(child_Exit);
 					
-					if(exitError != 0)
+					if(error_exit != 0)
 					{
 						printf("Child process exit error\n");
 					}
-					
-					exit(exitCode);
+					exit(code_exit);
 				default:
 					printf("PARENT: My PID is %d\n", getpid());
 					printf("PARENT: My child's PID is %d\n", Pid);
 					printf("PARENT: Waiting...\n");
-					wait(&exitCode);
-					
-					printf("PARENT: Real child's exit code is %d\n", WEXITSTATUS(exitCode));
+					wait(&code_exit);
+					printf("PARENT: Real child's exit code is %d\n", WEXITSTATUS(code_exit));
 					printf("PARENT: Exit\n");
 		}
-		
 		return 0;
 }
