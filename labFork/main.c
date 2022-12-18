@@ -37,7 +37,7 @@ int main(int argc, char** argv)
 		
 		struct sigaction newAction;
 		newAction.saHandler = sig_Term_Handler;
-		sigemptyset(&newAction.sa_mask);
+		sigemptyset(&newAction.saMask);
 		newAction.saFlags = 0;
 		sigaction(SIGTERM, &newAction, NULL);
 		signal(SIGINT, sig_Int_Handler);
